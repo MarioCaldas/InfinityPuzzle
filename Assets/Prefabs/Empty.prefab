@@ -130,4 +130,4 @@ MonoBehaviour:
   left: 0
   activeSides: 
   rotationDiff: 0
-  newNodeType: 0
+  block: {fileID: 0}

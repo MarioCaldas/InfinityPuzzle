@@ -20,8 +20,7 @@ public class Node : MonoBehaviour
 	[SerializeField] public int[] activeSides;
 	[HideInInspector] public float rotationDiff;
 
-	//--
-	public int newNodeType;
+	[SerializeField] private Block block;
 
 	// Public Methods
 	public int GetNodeType
@@ -75,7 +74,6 @@ public class Node : MonoBehaviour
 		activeSides[3] = left ? 1 : 0;
 
 		GetComponent<BoxCollider2D>().enabled = true;
-
 	}
 
 	// Update is called once per frame
@@ -99,6 +97,8 @@ public class Node : MonoBehaviour
 
 		if (levelManager.GetCurrentLevel().curLinkCount == levelManager.GetCurrentLevel().totalLinks)
 			StartCoroutine(AllNodesAreGoodToGo());
+
+		block.Check();
 	}
 
 	private IEnumerator AllNodesAreGoodToGo()
@@ -131,5 +131,6 @@ public class Node : MonoBehaviour
 		}
 		activeSides[3] = aux;
 	}
+
 
 }

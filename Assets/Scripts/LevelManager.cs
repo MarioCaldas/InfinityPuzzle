@@ -24,6 +24,8 @@ public class LevelManager : Singleton<LevelManager>
 
 	private bool hasMainNode;
 
+	public List<GameObject> blockSequence = new List<GameObject>();
+
 	// Use this for initialization
 	protected override void Awake()
 	{
@@ -85,7 +87,6 @@ public class LevelManager : Singleton<LevelManager>
 				GameObject newNode = Instantiate(nodesPrefabs[nodeType], new Vector3(w, h, 0), Quaternion.identity);
 				newNode.GetComponent<Node>().GetNodeType = nodeType;
 
-				newNode.GetComponent<Node>().newNodeType = nodeType;
 
 				while (newNode.GetComponent<Node>().ActiveSides()[0] != auxSides[0] || newNode.GetComponent<Node>().ActiveSides()[1] != auxSides[1]
 					|| newNode.GetComponent<Node>().ActiveSides()[2] != auxSides[2] || newNode.GetComponent<Node>().ActiveSides()[3] != auxSides[3])
@@ -241,6 +242,14 @@ public class LevelManager : Singleton<LevelManager>
 		}
 
 		return value;
+	}
+
+	public void PlaySqIvyAnim()
+	{
+		for (int i = 0; i < blockSequence.Count; i++)
+		{
+			blockSequence[i].transform.GetChild(0).GetComponent<Block>().StartIvyIncrease();
+		}
 	}
 
 
