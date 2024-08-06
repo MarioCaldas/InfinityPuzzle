@@ -11,7 +11,6 @@ public class Block : MonoBehaviour
 
 	public List<GameObject> neighborsBlocks = new List<GameObject>();
 
-
 	void Start()
 	{
 		levelManager = LevelManager.Instance;
@@ -29,16 +28,13 @@ public class Block : MonoBehaviour
 
 	public void Check()
 	{
-
 		DestroyIvy();
 
 		CheckNode((int)transform.parent.transform.position.x, (int)transform.parent.transform.position.y);
 
 		CheckExNode((int)transform.parent.transform.position.x, (int)transform.parent.transform.position.y);
 
-
 		PlayIvysSequence();
-
 
 	}
 
@@ -107,19 +103,7 @@ public class Block : MonoBehaviour
 
 	void PlayIvysSequence()
 	{
-
 		levelManager.PlaySqIvyAnim();
-		/*
-		for (int i = 0; i < neighborsBlocks.Count; i++)
-        {
-			neighborsBlocks[i].transform.GetChild(0).GetComponent<Block>().StartIvyIncrease();
-		
-		}*/
-	}
-
-	void PlayIvyAnim()
-	{
-		ivyLeafsObject.GetComponent<IvyController>().PlayIvyAnim(true);
 	}
 
 	public void CheckNode(int w, int h)
@@ -129,20 +113,14 @@ public class Block : MonoBehaviour
 		{
 			if (levelManager.LevelSettings.nodes[w, h].ActiveSides()[0] == 1 && levelManager.LevelSettings.nodes[w, h + 1].ActiveSides()[2] == 1)
 			{
-
 				if (levelManager.blockSequence.Contains(levelManager.LevelSettings.nodes[w, h].gameObject) == false)
 				{
-
 					levelManager.blockSequence.Add(levelManager.LevelSettings.nodes[w, h].gameObject);
-
 				}
 				if (levelManager.blockSequence.Contains(levelManager.LevelSettings.nodes[w, h + 1].gameObject) == false)
 				{
-
 					levelManager.blockSequence.Add(levelManager.LevelSettings.nodes[w, h + 1].gameObject);
-
 				}
-
 
 				if (neighborsBlocks.Contains((levelManager.LevelSettings.nodes[w, h + 1].gameObject)) == false)
 					neighborsBlocks.Add(levelManager.LevelSettings.nodes[w, h + 1].gameObject);
@@ -158,7 +136,6 @@ public class Block : MonoBehaviour
 		{
 			if (levelManager.LevelSettings.nodes[w, h].ActiveSides()[1] == 1 && levelManager.LevelSettings.nodes[w + 1, h].ActiveSides()[3] == 1)
 			{
-
 				if (levelManager.blockSequence.Contains(levelManager.LevelSettings.nodes[w, h].gameObject) == false)
 				{
 					levelManager.blockSequence.Add(levelManager.LevelSettings.nodes[w, h].gameObject);
@@ -175,14 +152,12 @@ public class Block : MonoBehaviour
 					levelManager.LevelSettings.nodes[w + 1, h].transform.GetChild(0).GetComponent<Block>().neighborsBlocks.Add(levelManager.LevelSettings.nodes[w, h].gameObject);
 
 			}
-
 		}
 
 		if (w != 0)
 		{
 			if (levelManager.LevelSettings.nodes[w, h].ActiveSides()[3] == 1 && levelManager.LevelSettings.nodes[w - 1, h].ActiveSides()[1] == 1)
 			{
-
 				if (levelManager.blockSequence.Contains(levelManager.LevelSettings.nodes[w, h].gameObject) == false)
 				{
 					levelManager.blockSequence.Add(levelManager.LevelSettings.nodes[w, h].gameObject);
@@ -193,7 +168,6 @@ public class Block : MonoBehaviour
 					levelManager.blockSequence.Add(levelManager.LevelSettings.nodes[w - 1, h].gameObject);
 
 				}
-
 
 				if (neighborsBlocks.Contains((levelManager.LevelSettings.nodes[w - 1, h].gameObject)) == false)
 					neighborsBlocks.Add(levelManager.LevelSettings.nodes[w - 1, h].gameObject);
@@ -219,15 +193,12 @@ public class Block : MonoBehaviour
 
 				}
 
-
 				if (neighborsBlocks.Contains((levelManager.LevelSettings.nodes[w, h - 1].gameObject)) == false)
 					neighborsBlocks.Add(levelManager.LevelSettings.nodes[w, h - 1].gameObject);
 
 				if (levelManager.LevelSettings.nodes[w, h - 1].transform.GetChild(0).GetComponent<Block>().neighborsBlocks.Contains(levelManager.LevelSettings.nodes[w, h].gameObject) == false)
 					levelManager.LevelSettings.nodes[w, h - 1].transform.GetChild(0).GetComponent<Block>().neighborsBlocks.Add(levelManager.LevelSettings.nodes[w, h].gameObject);
-
 			}
-
 
 		}
 
@@ -239,11 +210,9 @@ public class Block : MonoBehaviour
 
 		ivyLeafsObject.GetComponent<IvyController>().ResetVars();
 
-		//ivyStickObject.GetComponent<IvyController>().PlayParticles();
 		ivyStickObject.GetComponent<IvyController>().ResetVars();
 
 		levelManager.blockSequence.Remove(transform.parent.gameObject);
-
 	}
 
 	public void ResetVars()
@@ -251,7 +220,6 @@ public class Block : MonoBehaviour
 		for (int i = 0; i < neighborsBlocks.Count; i++)
 		{
 			neighborsBlocks.RemoveAt(i);
-
 		}
 	}
 }

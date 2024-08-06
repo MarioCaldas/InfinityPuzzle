@@ -39,15 +39,6 @@ public class Node : MonoBehaviour
 		bool r = false;
 
 		mainNode = value;
-		/*
-		if (mainNode)
-		{
-			GetComponent<SpriteRenderer>().sprite = levelManager.GetMainNodeSprite();
-		}
-		else
-		{
-			GetComponent<SpriteRenderer>().sprite = levelManager.GetDefaultNodeSprite();
-		}*/
 
 		return r;
 	}
@@ -57,16 +48,12 @@ public class Node : MonoBehaviour
 		return activeSides;
 	}
 
-	// Use this for initialization
 	void Awake()
 	{
-		// Get Globals
 		levelManager = LevelManager.Instance;
 
-		// Settings
 		rotationSpeed = levelManager.RotationSpeed();
 
-		// Active Sides
 		activeSides = new int[4];
 		activeSides[0] = top ? 1 : 0;
 		activeSides[1] = right ? 1 : 0;
@@ -109,6 +96,8 @@ public class Node : MonoBehaviour
 		}
 
 		yield return new WaitForSeconds(0.5f);
+
+		GameManager.Instance.LevelCompleted();
 	}
 
 	public void RotateNode()

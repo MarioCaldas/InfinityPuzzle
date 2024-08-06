@@ -12,7 +12,7 @@ public class LevelManager : Singleton<LevelManager>
 	[SerializeField] private GameObject[] nodesPrefabs;
 
 	[Header("Setup Level")]
-	[SerializeField] private bool BuildRandomLevel;
+	[SerializeField] private bool buildRandomLevel;
 	[SerializeField] private Level levelSettings;
 	public Level LevelSettings
 	{
@@ -25,26 +25,31 @@ public class LevelManager : Singleton<LevelManager>
 	private bool hasMainNode;
 
 	public List<GameObject> blockSequence = new List<GameObject>();
+	public List<GameObject> allBlocks = new List<GameObject>();
 
-	// Use this for initialization
-	protected override void Awake()
+	private GameManager gameManager;
+
+	private bool playingRandom = false;
+
+	 void Awake()
 	{
-		base.Awake();
 
 		BuildLevel();
 		levelSettings.totalLinks = GetLinksRequired();
 		RotateNodes();
 		levelSettings.curLinkCount = CheckNodes();
-		CameraFocus();
+
+		gameManager = GameManager.Instance;
+
+		UIManager.Instance.ShowEndLevel(false);
 	}
 
-	public void CameraFocus()
-	{
-		Camera.main.transform.position = new Vector3((levelSettings.width / 2) - 0.2f, (levelSettings.height / 2) - 0.5f, -3);
-	}
-
+	
 	private void BuildLevel()
 	{
+		blockSequence.Clear();
+		allBlocks.Clear();
+
 		levelSettings.nodes = new Node[levelSettings.width, levelSettings.height];
 
 		int[] auxSides = { 0, 0, 0, 0 };
@@ -107,6 +112,8 @@ public class LevelManager : Singleton<LevelManager>
 				}
 
 				levelSettings.nodes[w, h] = newNode.GetComponent<Node>();
+
+				allBlocks.Add(newNode);
 			}
 		}
 
@@ -252,7 +259,203 @@ public class LevelManager : Singleton<LevelManager>
 		}
 	}
 
+	// Save and Load Level Methods
+	public void BuildRandomLevel()
+	{
+		playingRandom = true;
 
+		foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Node"))
+		{
+			Destroy(obj);
+		}
+
+		levelSettings.nodes = new Node[levelSettings.width, levelSettings.height];
+		playAgain = true;
+
+		SetNewLevelSize();
+		BuildLevel();
+
+		levelSettings.totalLinks = GetLinksRequired();
+		RotateNodes();
+		levelSettings.curLinkCount = CheckNodes();
+
+		UIManager.Instance.ShowEndLevel(false);
+
+	}
+
+	public void SetNewLevelSize()
+	{
+		levelSettings.width = UnityEngine.Random.Range(2, 7);
+		levelSettings.height = UnityEngine.Random.Range(3, 13);
+	}
+
+	public void SaveLevelToObject()
+	{
+		List<PseudoNode> nodes = new List<PseudoNode>();
+
+		foreach (Node n in levelSettings.nodes)
+		{
+			PseudoNode p = new PseudoNode();
+			p.w = (int)n.transform.position.x;
+			p.h = (int)n.transform.position.y;
+			p.nodeType = n.GetNodeType;
+			p.mainNode = n.MainNode;
+			p.activeSides = n.ActiveSides();
+			p.top = n.top;
+			p.right = n.right;
+			p.bottom = n.bottom;
+			p.left = n.left;
+			p.activeSides = n.activeSides;
+			p.rotationDiff = n.rotationDiff;
+
+			nodes.Add(p);
+		}
+
+		gameManager.SavedLevels.savedLevels.Add(CreateNewLevel(levelSettings.totalLinks, levelSettings.width, levelSettings.height, nodes));
+		EditorUtility.SetDirty(gameManager.SavedLevels);
+		AssetDatabase.SaveAssets();
+		AssetDatabase.Refresh();
+
+	}
+	
+	public void LoadThisLevel(int index)
+	{
+		blockSequence.Clear();
+		allBlocks.Clear();
+		gameManager.PlayingLevel = index;
+		playingRandom = false;
+
+		foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Node"))
+		{
+			Destroy(obj);
+		}
+
+		Level newLevel = new Level();
+		newLevel.totalLinks = gameManager.SavedLevels.savedLevels[index].totalLinks;
+		newLevel.curLinkCount = gameManager.SavedLevels.savedLevels[index].curLinkCount;
+		newLevel.width = gameManager.SavedLevels.savedLevels[index].width;
+		newLevel.height = gameManager.SavedLevels.savedLevels[index].height;
+		newLevel.nodes = new Node[newLevel.width, newLevel.height];
+
+
+		foreach (PseudoNode p in gameManager.SavedLevels.savedLevels[index].nodes)
+		{
+			GameObject newNode = Instantiate(nodesPrefabs[p.nodeType], new Vector3(p.w, p.h, 0), Quaternion.identity);
+			Node n = newNode.GetComponent<Node>();
+
+			n.SetMainNode(p.mainNode);
+			n.top = p.top;
+			n.right = p.right;
+			n.bottom = p.bottom;
+			n.left = p.left;
+
+			// Return the Node Type
+			int nodeType = n.ActiveSides()[0] + n.ActiveSides()[1] + n.ActiveSides()[2] + n.ActiveSides()[3];
+			if (nodeType == 2 && n.ActiveSides()[0] != n.ActiveSides()[2])
+				nodeType = 5;
+
+
+			newNode.GetComponent<SpriteRenderer>().sprite = nodesPrefabs[nodeType].GetComponent<SpriteRenderer>().sprite;
+			newLevel.nodes[p.w, p.h] = n;
+
+			allBlocks.Add(newNode);
+
+		}
+
+
+		playAgain = true;
+		levelSettings = newLevel;
+
+		levelSettings.totalLinks = GetLinksRequired();
+		RotateNodes();
+		CameraFocus();
+		levelSettings.curLinkCount = CheckNodes();
+
+	}
+
+	public void RemoveLastSavedLevel()
+	{
+		gameManager.SavedLevels.savedLevels.RemoveAt(gameManager.SavedLevels.savedLevels.Count - 1);
+
+		EditorUtility.SetDirty(gameManager.SavedLevels);
+		AssetDatabase.SaveAssets();
+		AssetDatabase.Refresh();
+	}
+
+	public void CleanSavedLevelList()
+	{
+
+		gameManager.SavedLevels.savedLevels.Clear();
+		EditorUtility.SetDirty(gameManager.SavedLevels);
+		AssetDatabase.SaveAssets();
+		AssetDatabase.Refresh();
+
+	}
+
+	public PseudoLevel CreateNewLevel(int t, int w, int h, List<PseudoNode> n)
+	{
+		PseudoLevel newLvl = new PseudoLevel();
+
+		newLvl.totalLinks = t;
+		newLvl.curLinkCount = 0;
+		newLvl.width = w;
+		newLvl.height = h;
+		newLvl.nodes = n;
+
+		return newLvl;
+	}
+
+	//Camera adjustments
+	public void CameraFocus()
+	{
+		Vector3 levelCenterPos = CalculateCenter(allBlocks);
+		Camera.main.transform.position = levelCenterPos;
+		AdjustCameraPosition(levelCenterPos, allBlocks);
+
+	}
+	Vector3 CalculateCenter(List<GameObject> objects)
+	{
+		if (objects.Count <= 0)
+		{
+			return Vector3.zero;
+		}
+		Vector3 sum = Vector3.zero;
+
+		foreach (GameObject obj in objects)
+		{
+			sum += obj.transform.position;
+		}
+
+		Vector3 center = sum / objects.Count;
+		return center;
+	}
+	void AdjustCameraPosition(Vector3 center, List<GameObject> objects)
+	{
+		if (objects.Count <= 0)
+		{
+			return;
+		}
+
+		Bounds bounds = new Bounds(objects[0].transform.position, Vector3.zero);
+		foreach (GameObject obj in objects)
+		{
+			bounds.Encapsulate(obj.transform.position);
+		}
+
+		// Adjust the camera's z position based on the bounds
+		float levelWidth = bounds.size.x;
+		float levelHeight = bounds.size.y;
+
+		// Adjust the camera distance
+		float aspectRatio = (float)Screen.width / Screen.height;
+		float cameraSize = Mathf.Max(levelWidth / aspectRatio, levelHeight) / 2;
+
+
+		float fov = Camera.main.fieldOfView;
+		float distance = cameraSize / Mathf.Tan(fov * 0.3f * Mathf.Deg2Rad);
+		Camera.main.transform.position = new Vector3(center.x, center.y, -distance);
+
+	}
 }
 
 [Serializable]

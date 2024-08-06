@@ -12,7 +12,6 @@ public class IvyController : MonoBehaviour
 
     bool aux = false;
 
-
     private ParticleSystem leafsParticles;
 
     public Material growMat;
@@ -21,18 +20,12 @@ public class IvyController : MonoBehaviour
 
     [SerializeField] float windBendStrengt;
 
-    private float windBendStrengtMax;
-
-
     public bool increaseWind = false;
 
     public bool leafsBool;
 
-
     void Start()
     {
-        windBendStrengtMax = 0.6f;
-
         rend = GetComponent<MeshRenderer>();
 
         growValue = rend.material.GetFloat("Vector1_386C6BEE");
@@ -53,7 +46,6 @@ public class IvyController : MonoBehaviour
         growValue = 0;
         GetComponent<Renderer>().material = growMat;
         rend.material.SetFloat("Vector1_386C6BEE", -0.086f);
-        //growValue = rend.material.GetFloat("Vector1_386C6BEE");
         aux = false;
         playAnim = false;
 
